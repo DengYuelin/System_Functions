@@ -160,6 +160,9 @@
   <ItemGroup>
     <Library Include="USB7660.lib" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="USB7660.dll" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

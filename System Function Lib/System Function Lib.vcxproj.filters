@@ -47,4 +47,9 @@
       <Filter>资源文件</Filter>
     </Library>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="USB7660.dll">
+      <Filter>资源文件</Filter>
+    </None>
+  </ItemGroup>
 </Project>

@@ -39,7 +39,12 @@ bool Game_Init(HWND window)
 		return false;
 	}
 
-
+	//initialize USB device
+	if (ZT7660_OpenDevice(m_cardNO) != 0)
+	{
+		MessageBox(window, "Error initializing device USB7660", APPTITLE.c_str(), 0);
+		return false;
+	}
 
 	return true;
 }
@@ -79,8 +84,10 @@ void Game_Run(HWND window)
 
 void Game_End()
 {
-	//free memory and shut down
+	//shut down device USB7660
+	ZT7660_CloseDevice(m_cardNO);
 
+	//free memory and shut down
 	DirectSound_Shutdown();
 	DirectInput_Shutdown();
 	Direct3D_Shutdown();

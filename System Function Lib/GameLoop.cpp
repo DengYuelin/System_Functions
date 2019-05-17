@@ -1,5 +1,5 @@
 //frame organized and commented by Yuelin Deng
-//from 2.8-3.9
+//This file is used for Auto Control Experiment
 #include "DirectX.h"
 #include "Global_variable.h"
 using namespace std;

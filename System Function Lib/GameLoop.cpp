@@ -1,5 +1,6 @@
 //frame organized and commented by Yuelin Deng
 //This file is used for Auto Control Experiment
+//this should only show on one barch
 #include "DirectX.h"
 #include "Global_variable.h"
 using namespace std;

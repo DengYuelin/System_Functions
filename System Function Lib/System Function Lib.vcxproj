@@ -155,6 +155,10 @@
     <ClInclude Include="DirectSound.h" />
     <ClInclude Include="DirectX.h" />
     <ClInclude Include="Global_variable.h" />
+    <ClInclude Include="usb7660.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="USB7660.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,6 +2,8 @@
 //Control Experiment
 #include "DirectX.h"
 #include "Global_variable.h"
+#include "usb7660.h"
+#include <tchar.h>
 using namespace std;
 
 const string APPTITLE = "DirectX Project <Rename Me>";

@@ -38,5 +38,13 @@
     <ClInclude Include="Global_variable.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="usb7660.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="USB7660.lib">
+      <Filter>资源文件</Filter>
+    </Library>
   </ItemGroup>
 </Project>

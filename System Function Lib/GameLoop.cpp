@@ -1,5 +1,5 @@
 //frame organized and commented by Yuelin Deng
-//General base file
+//Control Experiment
 #include "DirectX.h"
 #include "Global_variable.h"
 using namespace std;

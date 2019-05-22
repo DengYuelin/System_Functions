@@ -45,6 +45,7 @@ bool Game_Init(HWND window)
 		MessageBox(window, "Error initializing device USB7660", APPTITLE.c_str(), 0);
 		return false;
 	}
+	font1 = MakeFont("Times New Roman", 45);
 
 	return true;
 }
@@ -59,8 +60,12 @@ void Game_Run(HWND window)
 	d3ddev->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 100), 1.0f, 0);
 
 	//*** insert game code here ***
-
-
+	read_data = 1;
+	read_data = ZT7660_AIonce(m_cardNO,m_chMode,21,m_AIrange,m_AIAmp,0,0,0,0,0,0);
+	ZT7660_AOonce(1, 1, 0, 4096);
+	
+	
+	
 
 
 	if (timeGetTime() > screentimer + 14)		//slow rendering to approximately 60 fps
@@ -70,8 +75,19 @@ void Game_Run(HWND window)
 		//start rendering
 		if (d3ddev->BeginScene())
 		{
+
+			//start drawing
+			spriteobj->Begin(D3DXSPRITE_ALPHABLEND);
 			//*** insert sprite code here ***
 
+
+			std::ostringstream text_1;
+			text_1 << read_data;
+			FontPrint(font1, 0, 0, 300, 250, text_1.str(), D3DCOLOR_XRGB(255, 255, 255));
+
+
+			//stop drawing
+			spriteobj->End();
 			//stop rendering
 			d3ddev->EndScene();
 			d3ddev->Present(NULL, NULL, NULL, NULL);

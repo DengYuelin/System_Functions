@@ -76,7 +76,6 @@ void Sprite_Transform_Draw(LPDIRECT3DTEXTURE9 image, int x, int y, int width, in
 	int frame = 0, int columns = 1, float rotation = 0.0f, float scaling = 1.0f,
 	D3DCOLOR color = D3DCOLOR_ARGB(255, 255, 255, 255));
 
-
 //game functions
 bool Game_Init(HWND window);
 void Game_Run(HWND window);

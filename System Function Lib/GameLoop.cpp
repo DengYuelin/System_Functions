@@ -13,6 +13,7 @@ const bool FULLSCREEN = false;
 
 
 DWORD screentimer = timeGetTime();
+DWORD fpstimer = timeGetTime();
 
 bool Game_Init(HWND window)
 {
@@ -40,11 +41,18 @@ bool Game_Init(HWND window)
 	}
 
 	//initialize USB device
-	if (ZT7660_OpenDevice(m_cardNO) != 0)
+	/*if (ZT7660_OpenDevice(m_cardNO) != 0)
 	{
 		MessageBox(window, "Error initializing device USB7660", APPTITLE.c_str(), 0);
 		return false;
+	}*/
+
+	if (!Bar.Load_texture("blue_boxTick.png"))
+	{
+		MessageBox(window, "Error loading blue_boxTick.png", APPTITLE.c_str(), 0);
+		return false;
 	}
+
 	font1 = MakeFont("Times New Roman", 45);
 
 	return true;
@@ -60,13 +68,33 @@ void Game_Run(HWND window)
 	d3ddev->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 100), 1.0f, 0);
 
 	//*** insert game code here ***
+	
+	//fps counter
+	fps_c++;
+	if (timeGetTime() > fpstimer + 500)
+	{
+		fpstimer = timeGetTime();
+		fps = fps_c * 2;
+		fps_c = 0;
+	}
+	
+	//read data
 	read_data = 1;
-	read_data = ZT7660_AIonce(m_cardNO,m_chMode,21,m_AIrange,m_AIAmp,0,0,0,0,0,0);
-	ZT7660_AOonce(1, 1, 0, 4096);
-	
-	
-	
+	read_data = ZT7660_AIonce(m_cardNO, m_chMode, 21, m_AIrange, m_AIAmp, 0, 0, 0, 0, 0, 0);
 
+	//bar movement
+	if (Bar.Mouse_over() && Mouse_Button(0))
+	{
+		Bar.Set_anchor_to_mouse();
+		Bar.coord_x = Bar.original_x;
+		if (Bar.coord_y >= Bar.original_y + 200)
+			Bar.coord_y = Bar.original_y + 200;
+		if (Bar.coord_y <= Bar.original_y - 200)
+			Bar.coord_y = Bar.original_y - 200;
+	}
+	
+	//controls
+	ZT7660_AOonce(1, 1, 0, 4096);
 
 	if (timeGetTime() > screentimer + 14)		//slow rendering to approximately 60 fps
 	{
@@ -80,11 +108,23 @@ void Game_Run(HWND window)
 			spriteobj->Begin(D3DXSPRITE_ALPHABLEND);
 			//*** insert sprite code here ***
 
-
+			//input value
 			std::ostringstream text_1;
 			text_1 << read_data;
 			FontPrint(font1, 0, 0, 300, 250, text_1.str(), D3DCOLOR_XRGB(255, 255, 255));
 
+			//fps
+			std::ostringstream fps_out;
+			fps_out << "fps: " << fps;
+			FontPrint(font1, SCREENW - 150, 0, 300, 250, fps_out.str(), D3DCOLOR_XRGB(255, 255, 255));
+
+			//input data 
+			std::ostringstream inputdata;
+			inputdata << "input: " << input_data;
+			FontPrint(font1, 20, SCREENH / 2 + 250, 300, 250, inputdata.str(), D3DCOLOR_XRGB(255, 255, 255));
+
+			//draw bar
+			Bar.Sprite_Draw();
 
 			//stop drawing
 			spriteobj->End();

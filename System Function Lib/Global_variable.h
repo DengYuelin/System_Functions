@@ -1,7 +1,8 @@
 #pragma once
 //used for mouse click detection
 bool mouse_left_up = true;
-bool mouse_right_up = true;
+bool mouse_right_up = true; 
+POINT point;
 //card variables
 unsigned long m_cardNO = 1;
 unsigned long m_chMode = 0;
@@ -48,5 +49,15 @@ unsigned long m_ADoverTime;
 //read variables
 unsigned long read_data;
 
+//input data
+unsigned long input_data = 0;
+
+//fps display
+unsigned int fps;
+unsigned int fps_c;
+
 //Font
 LPD3DXFONT font1;
+
+//sprites
+BASIC_SPRITE Bar(true, false, 1, 50, SCREENH / 2, 50, SCREENH / 2, 0, 1, 36, 36, 1, 0, 0, 0, 0, 0, 1, D3DCOLOR_ARGB(255, 255, 255, 255), NULL, 0);//slide bar

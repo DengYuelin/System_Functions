@@ -204,6 +204,29 @@ void Sprite_Transform_Draw(LPDIRECT3DTEXTURE9 image, int x, int y, int width, in
 	spriteobj->Draw(image, &srcRect, NULL, NULL, color);
 }
 
+void DrawLine(float x1, float y1, float x2, float y2, DWORD color)
+{
+	LPD3DXLINE line;
+	D3DXCreateLine(d3ddev, &line);
+	D3DXVECTOR2 lines[] = { D3DXVECTOR2(x1, y1), D3DXVECTOR2(x2, y2) };
+	line->Begin();
+	line->Draw(lines, 2, color);
+	line->End();
+	line->Release();
+}
+
+void DrawPoint(float x, float y, DWORD color)
+{
+	DrawLine(x, y, x + 1, y + 1, color);
+}
+
+void DrawCircle(float x, float y, float radius, DWORD color)
+{
+	float t;
+	for (t = 0.09; t <= M_PI * 2; t += 0.01)
+		DrawPoint((float)(radius*cos(t) + x), (float)(radius*sin(t) + y), color);
+}
+
 bool DirectInput_Init(HWND hwnd)
 {
 	//initialize DirectInput object

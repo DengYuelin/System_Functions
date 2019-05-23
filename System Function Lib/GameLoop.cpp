@@ -11,7 +11,6 @@ const int SCREENW = 1024;
 const int SCREENH = 768;
 const bool FULLSCREEN = false;
 
-
 DWORD screentimer = timeGetTime();
 DWORD fpstimer = timeGetTime();
 
@@ -95,7 +94,9 @@ void Game_Run(HWND window)
 	input_data = 4095.0 * (Bar.coord_y - Bar.original_y + 200) / 400;
 	
 	//controls
-	ZT7660_AOonce(1, 1, 0, 4096);
+	ZT7660_AOonce(1, 1, 0, 4095);
+
+
 
 	if (timeGetTime() > screentimer + 14)		//slow rendering to approximately 60 fps
 	{
@@ -108,6 +109,9 @@ void Game_Run(HWND window)
 			//start drawing
 			spriteobj->Begin(D3DXSPRITE_ALPHABLEND);
 			//*** insert sprite code here ***
+
+			DrawLine(50 + 17, Bar.original_y + 200 + 16, 50 + 17, Bar.original_y - 200 + 16, D3DCOLOR_XRGB(255, 255, 255));
+
 
 			//input value
 			std::ostringstream text_1;

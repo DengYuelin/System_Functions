@@ -14,6 +14,7 @@
 #include <iomanip>
 #include <stdlib.h>
 #include <sstream>
+#include <cmath>
 using namespace std;
 
 //libraries
@@ -70,11 +71,15 @@ LPDIRECT3DSURFACE9 LoadSurface(string filename);
 void DrawSurface(LPDIRECT3DSURFACE9 dest, float x, float y, LPDIRECT3DSURFACE9 source);
 LPDIRECT3DTEXTURE9 LoadTexture(string filename, D3DCOLOR transcolor = D3DCOLOR_XRGB(0, 0, 0));
 void Sprite_Draw_Frame(LPDIRECT3DTEXTURE9 texture, int destx, int desty,
-	int framenum, int framew, int frameh, int columns);
+int framenum, int framew, int frameh, int columns);
 void Sprite_Animate(int &frame, int startframe, int endframe, int direction, int &starttime, int delay);
 void Sprite_Transform_Draw(LPDIRECT3DTEXTURE9 image, int x, int y, int width, int height,
-	int frame = 0, int columns = 1, float rotation = 0.0f, float scaling = 1.0f,
-	D3DCOLOR color = D3DCOLOR_ARGB(255, 255, 255, 255));
+int frame = 0, int columns = 1, float rotation = 0.0f, float scaling = 1.0f,
+D3DCOLOR color = D3DCOLOR_ARGB(255, 255, 255, 255));
+void DrawLine(float x1, float y1, float x2, float y2, DWORD color);
+void DrawPoint(float x, float y, DWORD color);
+//super slow to draw circle
+void DrawCircle(float x, float y, float radius, DWORD color);
 
 //game functions
 bool Game_Init(HWND window);

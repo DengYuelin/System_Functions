@@ -50,7 +50,7 @@ unsigned long m_ADoverTime;
 unsigned long read_data;
 
 //input data
-unsigned long input_data = 0;
+double input_data = 0;
 
 //fps display
 unsigned int fps;

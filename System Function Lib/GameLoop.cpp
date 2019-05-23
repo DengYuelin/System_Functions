@@ -92,6 +92,7 @@ void Game_Run(HWND window)
 		if (Bar.coord_y <= Bar.original_y - 200)
 			Bar.coord_y = Bar.original_y - 200;
 	}
+	input_data = 4095.0 * (Bar.coord_y - Bar.original_y + 200) / 400;
 	
 	//controls
 	ZT7660_AOonce(1, 1, 0, 4096);

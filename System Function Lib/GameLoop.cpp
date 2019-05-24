@@ -4,6 +4,7 @@
 #include "Global_variable.h"
 #include "usb7660.h"
 #include <tchar.h>
+#include "original_PID.h"
 using namespace std;
 
 const string APPTITLE = "DirectX Project <Rename Me>";
@@ -12,7 +13,7 @@ const int SCREENH = 768;
 const bool FULLSCREEN = false;
 
 DWORD screentimer = timeGetTime();
-DWORD fpstimer = timeGetTime();
+
 
 bool Game_Init(HWND window)
 {
@@ -40,12 +41,13 @@ bool Game_Init(HWND window)
 	}
 
 	//initialize USB device
-	/*if (ZT7660_OpenDevice(m_cardNO) != 0)
+	if (ZT7660_OpenDevice(m_cardNO) != 0)
 	{
 		MessageBox(window, "Error initializing device USB7660", APPTITLE.c_str(), 0);
 		return false;
-	}*/
+	}
 
+	//initialize Slide Bar
 	if (!Bar.Load_texture("blue_boxTick.png"))
 	{
 		MessageBox(window, "Error loading blue_boxTick.png", APPTITLE.c_str(), 0);
@@ -76,10 +78,25 @@ void Game_Run(HWND window)
 		fps = fps_c * 2;
 		fps_c = 0;
 	}
-	
-	//read data
-	read_data = 1;
-	read_data = ZT7660_AIonce(m_cardNO, m_chMode, 21, m_AIrange, m_AIAmp, 0, 0, 0, 0, 0, 0);
+
+	//scaner
+	if (timeGetTime() > scantimer + 10)
+	{
+		scantimer = timeGetTime();
+
+		//read data
+		read_data = ZT7660_AIonce(m_cardNO, m_chMode, 21, m_AIrange, m_AIAmp, 0, 0, 0, 0, 0, 0);
+		
+		//controls
+		output_data = pid.PID_control(input_data, read_data);
+		ZT7660_AOonce(1, 1, 0, output_data);
+
+		input_wave[scaner] = (int)(400 * input_data / 4095.0);
+		output_wave[scaner] = (int)(400 * read_data / 4095.0);
+		scaner++;
+		if (scaner == 499)
+			scaner = 0;
+	}
 
 	//bar movement
 	if (Bar.Mouse_over() && Mouse_Button(0))
@@ -91,10 +108,7 @@ void Game_Run(HWND window)
 		if (Bar.coord_y <= Bar.original_y - 200)
 			Bar.coord_y = Bar.original_y - 200;
 	}
-	input_data = 4095.0 * (Bar.coord_y - Bar.original_y + 200) / 400;
-	
-	//controls
-	ZT7660_AOonce(1, 1, 0, 4095);
+	input_data = 4095.0 * (Bar.original_y + 200 - Bar.coord_y) / 400;
 
 
 
@@ -110,12 +124,23 @@ void Game_Run(HWND window)
 			spriteobj->Begin(D3DXSPRITE_ALPHABLEND);
 			//*** insert sprite code here ***
 
-			DrawLine(50 + 17, Bar.original_y + 200 + 16, 50 + 17, Bar.original_y - 200 + 16, D3DCOLOR_XRGB(255, 255, 255));
 
+			//draw axis
+			DrawLine(50 + 17, Bar.original_y + 200 + 16, 50 + 17, Bar.original_y - 200 + 16, D3DCOLOR_XRGB(255, 255, 255));
+			DrawLine(400, 200, 400, 600, D3DCOLOR_XRGB(255, 255, 255));
+			DrawLine(400, 600, 900, 600, D3DCOLOR_XRGB(255, 255, 255));
+
+			for (int i = 0; i < 500; i++)
+			{
+				DrawPoint(400 + i, 600 - input_wave[i], D3DCOLOR_XRGB(255, 0, 255));
+
+
+				DrawPoint(400 + i, 600 - output_wave[i], D3DCOLOR_XRGB(255, 255, 0));
+			}
 
 			//input value
 			std::ostringstream text_1;
-			text_1 << read_data;
+			text_1 << "输入："  << read_data <<" 输出:" << output_data;
 			FontPrint(font1, 0, 0, 300, 250, text_1.str(), D3DCOLOR_XRGB(255, 255, 255));
 
 			//fps

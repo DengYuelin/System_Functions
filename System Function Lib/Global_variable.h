@@ -1,4 +1,6 @@
 #pragma once
+#include "original_PID.h"
+#include "DirectX.h"
 //used for mouse click detection
 bool mouse_left_up = true;
 bool mouse_right_up = true; 
@@ -7,7 +9,7 @@ POINT point;
 unsigned long m_cardNO = 1;
 unsigned long m_chMode = 0;
 unsigned long m_chNO = 21;
-unsigned long m_AIrange = 2;
+unsigned long m_AIrange = 0;
 unsigned long m_AIAmp = 0;
 unsigned long m_ADstartMode;
 unsigned long m_ADfreq;
@@ -52,12 +54,24 @@ unsigned long read_data;
 //input data
 double input_data = 0;
 
+//output data
+PID pid(1.0,0.01,1.0);
+int output_data = 0;
+
 //fps display
+DWORD fpstimer = timeGetTime();
 unsigned int fps;
 unsigned int fps_c;
+
+//wave
+unsigned int scaner = 0;
+DWORD scantimer = timeGetTime();
+int input_wave[500] = { 0 };
+int output_wave[500] = { 0 };
 
 //Font
 LPD3DXFONT font1;
 
 //sprites
 BASIC_SPRITE Bar(true, false, 1, 50, SCREENH / 2, 50, SCREENH / 2, 0, 1, 36, 36, 1, 0, 0, 0, 0, 0, 1, D3DCOLOR_ARGB(255, 255, 255, 255), NULL, 0);//slide bar
+

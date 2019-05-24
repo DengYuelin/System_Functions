@@ -146,7 +146,6 @@ public:
 	int Block_number;
 };
 
-
 inline BASIC_SPRITE::BASIC_SPRITE(const int blocknumber) :
 	effective(false),
 	selected(false),

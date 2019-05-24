@@ -149,12 +149,14 @@
     <ClCompile Include="DirectSound.cpp" />
     <ClCompile Include="DirectX.cpp" />
     <ClCompile Include="GameLoop.cpp" />
+    <ClCompile Include="original_PID.cpp" />
     <ClCompile Include="Windows.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DirectSound.h" />
     <ClInclude Include="DirectX.h" />
     <ClInclude Include="Global_variable.h" />
+    <ClInclude Include="original_PID.h" />
     <ClInclude Include="usb7660.h" />
   </ItemGroup>
   <ItemGroup>

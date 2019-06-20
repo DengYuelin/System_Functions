@@ -7,6 +7,8 @@ public:
 	~PID();
 	//function
 	float PID_control(const float reference, const float sensor);
+	void reset(const float k_p, const float k_i, const float k_d);
+	void clearpid();
 	//data
 	float error_1;
 	float error;

@@ -32,7 +32,7 @@ float PID::PID_control(const float reference, const float sensor)
 
 
 	//dead zone
-	if (error <= 0.01 && error >= -0.01)
+	if (error <= 0.1 && error >= -0.1)
 		return 1800;
 	else
 	{
@@ -46,6 +46,27 @@ float PID::PID_control(const float reference, const float sensor)
 		}
 	}
 	
+}
+
+void PID::reset(const float k_p, const float k_i, const float k_d)
+{
+	this->kp = k_p;
+	this->ki = k_i;
+	this->kd = k_d;
+	this->error_1 = 0;
+	this->error_2 = 0;
+	this->error = 0;
+	this->u = 0;
+	this->u_1 = 0;
+}
+
+void PID::clearpid()
+{
+	this->error_1 = 0;
+	this->error_2 = 0;
+	this->error = 0;
+	this->u = 0;
+	this->u_1 = 0;
 }
 
 LPF::LPF(const float a)

@@ -1,6 +1,9 @@
 #pragma once
 #include "original_PID.h"
 #include "DirectX.h"
+#include"LList.h"
+#include"arrayList.h"
+#include"Constants.h"
 //used for mouse click detection
 bool mouse_left_up = true;
 bool mouse_right_up = true; 
@@ -17,49 +20,40 @@ unsigned long m_ABflag;
 unsigned long m_ch1Flag;
 unsigned long m_ADctrlWord;
 unsigned long m_ADoverTime;
-//入口参数：
-//          cardNO：模块号，默认从 1 开始。有关这个参数的详细说明，请参考 ZT7660_OpenDevice 函数
-//          chMode：通道方式
-//                    0 = 表示单端，固定单通道方式
-//                    2 = 表示双端，固定单通道方式
-//            chNO：通道号
-//                    当chMode = 0 时，为通道号(1--48)
-//                    当chMode = 2 时，为通道号(1--24)
-//         AIrange：选择对采集到的AD原码值做何种变换，应该与AD采集量程(一般需跳线)相匹配：
-//                    AIrange = 0，表示返回原码值，所有卡都有这种方式。
-//                                 对于12位的卡返回 0~4095 之间的值
-//                                 对于16位的卡返回 0~65535 之间的值
-//                    AIrange = 1，表示把原码值转化为 0 -- 5000mV 之间的值，如果此卡没有这种量程，不应选这种方式
-//                    AIrange = 2，表示把原码值转化为 0 -- 10000mV 之间的值，如果此卡没有这种量程，不应选这种方式
-//                    AIrange = 5，表示把原码值转化为 -5000 -- 5000mV 之间的值，如果此卡没有这种量程，不应选这种方式
-//           AIAmp：程控增益系数(0～2)。
-//                    0 = 1倍增益(无增益)；1 = 10倍增益；2 = 100倍增益
-//     ADstartMode：保留。保持此参数为0
-//          ADfreq：保留。保持此参数为0
-//          ABflag：设置模块为A型(12bit)还是B型(16bit)
-//                    0 = A型；1 = B型
-//         ch1Flag：保留。保持此参数为0
-//      ADctrlWord：一般保持此参数为0。
-//                    若此参数不为0，函数将直接用这个参数的值初始化AD，而对其他影响AD方式的参数，
-//                    例如chMode、AIrange、AIAmp、ABflag、ch1Flag的值不予考虑。
-//                    此参数的说明请参考说明书中对 usb7660AI 函数的lCode参数的说明。
-//      ADoverTime：保留。保持这个参数为0
-//返回值： 不等于 -1，表采集到的AD结果
-//             -1   ，当 ZT7660_GetLastErr 返回值等于 0 时，表AD结果
-//                    当 ZT7660_GetLastErr 返回值小于 0 时，表失败
 
-//read variables
+//scanner
+//read the data from the device ; generate sin wave
+DWORD scantimer = timeGetTime();
 unsigned long read_data;
+LList <int> read_list;
+int scanner_cycle = 4;
+double scanner_frequency = (1000.0 / (scanner_cycle + 1));//Hz
+int sincounter = 0;
+double sin_frequency = 0.25; // Hz
+int sin_amplitude = 1000;
+bool running = false;
 
-//input data
-int input_data = 0;
+//target data
+int target_mode = 1;
+int target_data = 0;
+LList <int> target_list;
 
 //output data
-PID pid(5, 2, 10);//250ms
-PID step_pid(2, 1, 1);//1.5 0.1 1
+PID pid(5, 2, 8);//250ms
+//PID step_pid(1.5,0.1,1);
 LPF lpf(0.9);
 int output_data = 0;
+LList <int> output_list;
 DWORD outputtimer = timeGetTime();
+int output_cycle = 9;
+double output_frequency = (1000.0 / (output_cycle + 1));//Hz
+
+
+//display
+int lenth = 620; //bar hight
+int origonx = 522;
+int origony = 786;
+int timeaxis = 1000;
 
 
 //fps display
@@ -67,19 +61,31 @@ DWORD fpstimer = timeGetTime();
 unsigned int fps;
 unsigned int fps_c;
 
-//wave
-unsigned int scaner = 0;
-DWORD scantimer = timeGetTime();
-int input_wave[500] = { 0 };
-int output_wave[500] = { 0 };
-double sincounter = 0.0;
-int scanertime = 4;
-
 //Font
-LPD3DXFONT font1;
+LPD3DXFONT TNR45;
+LPD3DXFONT TNR32;
 
-//sprites
-BASIC_SPRITE Bar(true, false, 1, 50, SCREENH / 2, 50, SCREENH / 2, 0, 1, 36, 36, 1, 0, 0, 0, 0, 0, 1, D3DCOLOR_ARGB(255, 255, 255, 255), NULL, 0);//slide bar
-BASIC_SPRITE Background1(true, false, 1, 0, 0, 0, 0, 0, 1, 2048, 1536, 0.5, 0, 0, 0, 0, 0, 1);
-BASIC_SPRITE Background2(false, false, 1, 0, 0, 0, 0, 0, 1, 2048, 1536, 0.5, 0, 0, 0, 0, 0, 1);
-BASIC_SPRITE Background3(false, false, 1, 0, 0, 0, 0, 0, 1, 2048, 1536, 0.5, 0, 0, 0, 0, 0, 1);
+//Background
+int background = 1;
+BASIC_SPRITE Background1(true, false, 1, 0, 0, 0, 0, 0, 1, 1920, 1080, 1, 0, 0, 0, 0, 0, 1);
+BASIC_SPRITE Background2(false, false, 1, 0, 0, 0, 0, 0, 1, 1920, 1080, 1, 0, 0, 0, 0, 0, 1);
+BASIC_SPRITE Background3(false, false, 1, 0, 0, 0, 0, 0, 1, 1920, 1080, 1, 0, 0, 0, 0, 0, 1);
+BASIC_SPRITE Background1_ClickBox(true, false, 1, 40, 166, 40, 166, 0, 1, 356, 92, 1, 0, 0, 0, 0, 0, 1);
+BASIC_SPRITE Background2_ClickBox(true, false, 1, 40, 258, 40, 258, 0, 1, 356, 92, 1, 0, 0, 0, 0, 0, 1);
+BASIC_SPRITE Background3_ClickBox(true, false, 1, 40, 350, 40, 350, 0, 1, 356, 92, 1, 0, 0, 0, 0, 0, 1);
+
+
+//Background 1
+BASIC_SPRITE Sin1_Button(true, false, 1, 542, 300, 542, 300, 0, 2, 100, 100, 1, 0, 0, 0, 0, 0, 1);
+BASIC_SPRITE Sin2_Button(true, false, 1, 642, 300, 642, 300, 0, 2, 100, 100, 1, 0, 0, 0, 0, 0, 1);
+BASIC_SPRITE Sin3_Button(true, false, 1, 742, 300, 742, 300, 0, 2, 100, 100, 1, 0, 0, 0, 0, 0, 1);
+BASIC_SPRITE Sin4_Button(true, false, 1, 842, 300, 842, 300, 0, 2, 100, 100, 1, 0, 0, 0, 0, 0, 1);
+BASIC_SPRITE Sin5_Button(true, false, 1, 942, 300, 942, 300, 0, 2, 100, 100, 1, 0, 0, 0, 0, 0, 1);
+BASIC_SPRITE Position_Button(true, false, 1, 1162, 300, 1162, 300, 0, 2, 270, 100, 1, 0, 0, 0, 0, 0, 1);
+BASIC_SPRITE Valve_Button(true, false, 1, 1432, 300, 1432, 300, 0, 2, 270, 100, 1, 0, 0, 0, 0, 0, 1);
+//Background 2
+
+//Background 3
+BASIC_SPRITE Start_Button(false, false, 1, 1616, 900, 1616, 900, 0, 2, 100, 100, 1, 0, 0, 0, 0, 0, 1);
+BASIC_SPRITE Stop_Button(false, false, 1, 1216, 900, 1716, 900, 0, 2, 100, 100, 1, 0, 0, 0, 0, 0, 1);
+BASIC_SPRITE Bar(false, false, 1, 1780, 460, 1780, 460, 0, 1, 124, 124, 0.5, 0, 0, 0, 0, 1);

@@ -17,6 +17,8 @@
 #include <cmath>
 using namespace std;
 
+
+
 //libraries
 #pragma comment(lib,"winmm.lib")
 #pragma comment(lib,"user32.lib")
@@ -470,11 +472,11 @@ inline void BASIC_SPRITE::Displayinfo()
 {
 	if (this->selected && this->effective)
 	{
-		extern LPD3DXFONT font1;
+		extern LPD3DXFONT TNR45;
 		std::ostringstream text;
 		text << this->Block_number;
 		Sprite_Transform_Draw(this->texture, 0, 0, 0, 0, 0, 1);
-		//FontPrint(font1, 400, 300, text.str(), D3DCOLOR_XRGB(0, 0, 0));
+		//FontPrint(TNR45, 400, 300, text.str(), D3DCOLOR_XRGB(0, 0, 0));
 	}
 }
 

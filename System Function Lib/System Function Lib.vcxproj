@@ -153,9 +153,13 @@
     <ClCompile Include="Windows.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AbstractList.h" />
+    <ClInclude Include="arrayList.h" />
+    <ClInclude Include="Constants.h" />
     <ClInclude Include="DirectSound.h" />
     <ClInclude Include="DirectX.h" />
     <ClInclude Include="Global_variable.h" />
+    <ClInclude Include="LList.h" />
     <ClInclude Include="original_PID.h" />
     <ClInclude Include="usb7660.h" />
   </ItemGroup>

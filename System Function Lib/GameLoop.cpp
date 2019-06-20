@@ -8,9 +8,9 @@
 using namespace std;
 
 const string APPTITLE = "DirectX Project <Rename Me>";
-const int SCREENW = 1024;
-const int SCREENH = 768;
-const bool FULLSCREEN = false;
+const int SCREENW = 1920;
+const int SCREENH = 1080;
+const bool FULLSCREEN = true;
 
 DWORD screentimer = timeGetTime();
 
@@ -47,13 +47,6 @@ bool Game_Init(HWND window)
 		return false;
 	}
 
-	//initialize Slide Bar
-	if (!Bar.Load_texture("blue_boxTick.png"))
-	{
-		MessageBox(window, "Error loading blue_boxTick.png", APPTITLE.c_str(), 0);
-		return false;
-	}
-
 	//initialize Background1
 	if (!Background1.Load_texture("background1.png"))
 	{
@@ -75,7 +68,70 @@ bool Game_Init(HWND window)
 		return false;
 	}
 
-	font1 = MakeFont("Times New Roman", 45);
+	//initialize frequency button
+	if (!Sin1_Button.Load_texture("frebutton.png"))
+	{
+		MessageBox(window, "Error loading frebutton.png", APPTITLE.c_str(), 0);
+		return false;
+	}
+	if (!Sin2_Button.Load_texture("frebutton.png"))
+	{
+		MessageBox(window, "Error loading frebutton.png", APPTITLE.c_str(), 0);
+		return false;
+	}
+	if (!Sin3_Button.Load_texture("frebutton.png"))
+	{
+		MessageBox(window, "Error loading frebutton.png", APPTITLE.c_str(), 0);
+		return false;
+	}
+	if (!Sin4_Button.Load_texture("frebutton.png"))
+	{
+		MessageBox(window, "Error loading frebutton.png", APPTITLE.c_str(), 0);
+		return false;
+	}
+	if (!Sin5_Button.Load_texture("frebutton.png"))
+	{
+		MessageBox(window, "Error loading frebutton.png", APPTITLE.c_str(), 0);
+		return false;
+	}
+
+	//initialize position button
+	if (!Position_Button.Load_texture("posbutton.png"))
+	{
+		MessageBox(window, "Error loading posbutton.png", APPTITLE.c_str(), 0);
+		return false;
+	}
+
+	//initialize valve button
+	if (!Valve_Button.Load_texture("valvebutton.png"))
+	{
+		MessageBox(window, "Error loading valvebutton.png", APPTITLE.c_str(), 0);
+		return false;
+	}
+
+	//initialize start button
+	if (!Start_Button.Load_texture("start.png"))
+	{
+		MessageBox(window, "Error loading start.png", APPTITLE.c_str(), 0);
+		return false;
+	}
+
+	//initialize stop button
+	if (!Stop_Button.Load_texture("stop.png"))
+	{
+		MessageBox(window, "Error loading stop.png", APPTITLE.c_str(), 0);
+		return false;
+	}
+
+	//initialize bar
+	if (!Bar.Load_texture("bar.png"))
+	{
+		MessageBox(window, "Error loading bar.png", APPTITLE.c_str(), 0);
+		return false;
+	}
+
+	TNR45 = MakeFont("Times New Roman", 45);
+	TNR32 = MakeFont("Times New Roman", 35);
 
 	return true;
 }
@@ -88,63 +144,303 @@ void Game_Run(HWND window)
 	DirectInput_Update();
 	//clear screen
 	d3ddev->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 100), 1.0f, 0);
+	//get cusor point
+	GetCursorPos(&point);
+
 
 	//*** insert game code here ***
 	
 	//fps counter
 	fps_c++;
-	if (timeGetTime() > fpstimer + 500)
+	if (timeGetTime() > fpstimer + 499)
 	{
 		fpstimer = timeGetTime();
 		fps = fps_c * 2;
 		fps_c = 0;
 	}
 
-	//bar movement
-	if (Bar.Mouse_over() && Mouse_Button(0))
-	{
-		Bar.Set_anchor_to_mouse();
-		Bar.coord_x = Bar.original_x;
-		if (Bar.coord_y >= Bar.original_y + 200)
-			Bar.coord_y = Bar.original_y + 200;
-		if (Bar.coord_y <= Bar.original_y - 200)
-			Bar.coord_y = Bar.original_y - 200;
-	}
-	//input_data = (int)(4095.0 * (Bar.original_y + 200 - Bar.coord_y) / 400);
-
-	//output cycle
-	if (timeGetTime() > outputtimer + 5)
-	{
-		//controls
-		
-		output_data = (int)pid.PID_control(input_data, read_data);
-		//output_data = (int)step_pid.PID_control(input_data, read_data);
-		ZT7660_AOonce(1, 1, 0, output_data);
-	}
-
-	//scaner
-	if (timeGetTime() > scantimer + scanertime)
+	//scaner cycle
+	if (timeGetTime() > scantimer + scanner_cycle)
 	{
 		scantimer = timeGetTime();
-
-		//read data
-		read_data = ZT7660_AIonce(m_cardNO, m_chMode, 21, m_AIrange, m_AIAmp, 0, 0, 0, 0, 0, 0);
-		read_data = lpf.lpf(read_data);
-
 		//sine wave
-		sincounter++;
-		input_data = (int)(sin(sincounter * M_PI / 250) * 1000 + 2047);
+		if (running)
+		{
+			//read data
+			read_data = ZT7660_AIonce(m_cardNO, m_chMode, 21, m_AIrange, m_AIAmp, 0, 0, 0, 0, 0, 0);
+			read_data = lpf.lpf(read_data);
+
+			if (target_mode == 1)
+			{
+				sincounter++;
+				target_data = (int)(sin(sincounter * 2 * M_PI / (1000 / (scanner_cycle + 1) / sin_frequency)) * sin_amplitude + 2047);
+				//calcuate output data
+				output_data = pid.PID_control(target_data, read_data);
+			}
+			else if (target_mode == 2)
+			{
+				target_data = (int)((700 - Bar.coord_y) * 4096 / lenth);
+				output_data = pid.PID_control(target_data, read_data);
+			}
+			else if (target_mode == 3)
+			{
+				output_data = (int)((700 - Bar.coord_y) * 4096 / lenth);
+			}
+
+
+			//record data
+			output_list.append(output_data);
+			read_list.append(read_data);
+			target_list.append(target_data);
+		}
+		else
+			output_data = 1800;
+
 		
-		//wave
-		input_wave[scaner] = (int)(400 * input_data / 4095.0);
-		output_wave[scaner] = (int)(400 * read_data / 4095.0);
-		scaner++;
-		if (scaner == 499)
-			scaner = 0;
+
+
+	}
+
+	//Graphics
+
+	//background switch
+	if (Background1_ClickBox.Mouse_over() && Left_Click_Once())
+	{
+		background = 1;
+		Background1.effective = true;
+		Background2.effective = false;
+		Background3.effective = false;
+		//group 1
+		Sin1_Button.effective = true;
+		Sin2_Button.effective = true;
+		Sin3_Button.effective = true;
+		Sin4_Button.effective = true;
+		Sin5_Button.effective = true;
+		Position_Button.effective = true;
+		Valve_Button.effective = true;
+		//group 3
+		Start_Button.effective = false;
+		Stop_Button.effective = false;
+		Bar.effective = false;
+	}
+
+	if (Background2_ClickBox.Mouse_over() && Left_Click_Once())
+	{
+		background = 2;
+		Background1.effective = false;
+		Background2.effective = true;
+		Background3.effective = false;
+		//group 1
+		Sin1_Button.effective = false;
+		Sin2_Button.effective = false;
+		Sin3_Button.effective = false;
+		Sin4_Button.effective = false;
+		Sin5_Button.effective = false;
+		Position_Button.effective = false;
+		Valve_Button.effective = false;
+		//group 3
+		Start_Button.effective = false;
+		Stop_Button.effective = false;
+		Bar.effective = false;
+	}
+
+	if (Background3_ClickBox.Mouse_over() && Left_Click_Once())
+	{
+		background = 3;
+		Background1.effective = false;
+		Background2.effective = false;
+		Background3.effective = true;
+		//group 1
+		Sin1_Button.effective = false;
+		Sin2_Button.effective = false;
+		Sin3_Button.effective = false;
+		Sin4_Button.effective = false;
+		Sin5_Button.effective = false;
+		Position_Button.effective = false;
+		Valve_Button.effective = false;
+		//group 3
+		Start_Button.effective = true;
+		Stop_Button.effective = true;
+		Bar.effective = true;
+	}
+	switch (background)
+	{
+	case 1:
+		if (Sin1_Button.Mouse_over() && Left_Click_Once())
+		{
+			Sin1_Button.frame = 1;
+			Sin2_Button.frame = 0;
+			Sin3_Button.frame = 0;
+			Sin4_Button.frame = 0;
+			Sin5_Button.frame = 0;
+			Position_Button.frame = 0;
+			Valve_Button.frame = 0;
+			Start_Button.frame = 0;
+			Stop_Button.frame = 0;
+			target_mode = 1;
+			sin_frequency = 0.22;
+			sincounter = 0;
+			pid.reset(5.3,2,10);
+			running = false;
+		}
+		else if (Sin2_Button.Mouse_over() && Left_Click_Once())
+		{
+			Sin1_Button.frame = 0;
+			Sin2_Button.frame = 1;
+			Sin3_Button.frame = 0;
+			Sin4_Button.frame = 0;
+			Sin5_Button.frame = 0;
+			Position_Button.frame = 0;
+			Valve_Button.frame = 0;
+			Start_Button.frame = 0;
+			Stop_Button.frame = 0;
+			target_mode = 1;
+			sin_frequency = 0.21;
+			sincounter = 0;
+			pid.reset(5.3,2,10);
+			running = false;
+		}
+		else if (Sin3_Button.Mouse_over() && Left_Click_Once())
+		{
+			Sin1_Button.frame = 0;
+			Sin2_Button.frame = 0;
+			Sin3_Button.frame = 1;
+			Sin4_Button.frame = 0;
+			Sin5_Button.frame = 0;
+			Position_Button.frame = 0;
+			Valve_Button.frame = 0;
+			Start_Button.frame = 0;
+			Stop_Button.frame = 0;
+			target_mode = 1;
+			sin_frequency = 0.20;
+			sincounter = 0;
+			pid.reset(5.3,2,10);
+			running = false;
+		}
+		else if (Sin4_Button.Mouse_over() && Left_Click_Once())
+		{
+			Sin1_Button.frame = 0;
+			Sin2_Button.frame = 0;
+			Sin3_Button.frame = 0;
+			Sin4_Button.frame = 1;
+			Sin5_Button.frame = 0;
+			Position_Button.frame = 0;
+			Valve_Button.frame = 0;
+			Start_Button.frame = 0;
+			Stop_Button.frame = 0;
+			target_mode = 1;
+			sin_frequency = 0.15;
+			sincounter = 0;
+			pid.reset(5.1,2,9);
+			running = false;
+		}
+		else if (Sin5_Button.Mouse_over() && Left_Click_Once())
+		{
+			Sin1_Button.frame = 0;
+			Sin2_Button.frame = 0;
+			Sin3_Button.frame = 0;
+			Sin4_Button.frame = 0;
+			Sin5_Button.frame = 1;
+			Position_Button.frame = 0;
+			Valve_Button.frame = 0;
+			Start_Button.frame = 0;
+			Stop_Button.frame = 0;
+			target_mode = 1;
+			sin_frequency = 0.10;
+			sincounter = 0;
+			pid.reset(5,2,10);
+			running = false;
+		}
+		else if (Position_Button.Mouse_over() && Left_Click_Once())
+		{
+			Sin1_Button.frame = 0;
+			Sin2_Button.frame = 0;
+			Sin3_Button.frame = 0;
+			Sin4_Button.frame = 0;
+			Sin5_Button.frame = 0;
+			Position_Button.frame = 1;
+			Valve_Button.frame = 0;
+			Start_Button.frame = 0;
+			Stop_Button.frame = 0;
+			target_mode = 2;
+			pid.reset(1.5,1,1);
+			running = false;
+		}
+		else if (Valve_Button.Mouse_over() && Left_Click_Once())
+		{
+			Sin1_Button.frame = 0;
+			Sin2_Button.frame = 0;
+			Sin3_Button.frame = 0;
+			Sin4_Button.frame = 0;
+			Sin5_Button.frame = 0;
+			Position_Button.frame = 0;
+			Valve_Button.frame = 1;
+			Start_Button.frame = 0;
+			Stop_Button.frame = 0;
+			target_mode = 3;
+			running = false;
+		}
+		break;
+	case 3:
+		if (Start_Button.Mouse_over() && Mouse_Button(0))
+		{
+			Start_Button.frame = 1;
+			running = true;
+		}
+		else if (Stop_Button.Mouse_over() && Mouse_Button(0))
+		{
+			Stop_Button.frame = 1;
+			running = false;
+			sincounter = 0;
+			output_list.clear();
+			read_list.clear();
+			target_list.clear();
+			pid.clearpid();
+		}
+		else
+		{
+			Start_Button.frame = 0;
+			Stop_Button.frame = 0;
+		}
+		if (target_mode == 1)
+		{
+			Bar.coord_y = 700 - (read_data * lenth / 4096);
+		}
+		else
+		{
+			if (Mouse_Button(0) && point.x <= 1815 && point.x >= 1790 && running)
+			{
+				Bar.coord_y = point.y - 32;
+				if (Bar.coord_y <= 160)
+					Bar.coord_y = 160;
+				if (Bar.coord_y >= 700)
+					Bar.coord_y = 700;
+			}
+		}
+		break;
 	}
 
 
-	if (timeGetTime() > screentimer + 14)		//slow rendering to approximately 60 fps
+
+
+
+
+	//output cycle
+	if (timeGetTime() > outputtimer + output_cycle)
+	{
+		ZT7660_AOonce(1, 1, 0, output_data);
+	}
+	//mouse state
+	if (Mouse_Button(0))
+		mouse_left_up = false;
+	else
+		mouse_left_up = true;
+	if (Mouse_Button(1))
+		mouse_right_up = false;
+	else
+		mouse_right_up = true;
+
+	if (timeGetTime() > screentimer + 40)		//slow rendering to approximately 30 fps
 	{
 		screentimer = timeGetTime();
 
@@ -156,44 +452,129 @@ void Game_Run(HWND window)
 			spriteobj->Begin(D3DXSPRITE_ALPHABLEND);
 			//*** insert sprite code here ***
 			//draw background
-			//Background1.Sprite_Draw();
-			//Background2.Sprite_Draw();
-			//Background3.Sprite_Draw();
+			Background1.Sprite_Draw();
+			Background2.Sprite_Draw();
+			Background3.Sprite_Draw();
 
-			
 
-			//input value
-			std::ostringstream text_1;
-			text_1 << "输入："  << read_data <<" 输出:" << output_data;
-			FontPrint(font1, 0, 0, 300, 250, text_1.str(), D3DCOLOR_XRGB(255, 255, 255));
+			//draw interface
+			Sin1_Button.Sprite_Draw();
+			Sin2_Button.Sprite_Draw();
+			Sin3_Button.Sprite_Draw();
+			Sin4_Button.Sprite_Draw();
+			Sin5_Button.Sprite_Draw();
+			Position_Button.Sprite_Draw();
+			Valve_Button.Sprite_Draw();
+			Start_Button.Sprite_Draw();
+			Stop_Button.Sprite_Draw();
+			Bar.Sprite_Draw();
+
+			//display text
+			//group 2
+			std::ostringstream p1_sin;
+			std::ostringstream p2_kp;
+			std::ostringstream p2_ki;
+			std::ostringstream p2_kd;
+			std::ostringstream p2_lpf;
+			std::ostringstream p2_read;
+			std::ostringstream p2_out;
+			std::ostringstream p2_sf;
+			std::ostringstream p2_of;
+			std::ostringstream p3_target;
+			switch (background)
+			{
+			case 1:
+				p1_sin << "0.22   0.21   0.20   0.15   0.10";
+				FontPrint(TNR45, 560, 331, 590, 250, p1_sin.str(), D3DCOLOR_XRGB(255, 255, 255));
+				break;
+			case 2:
+				p2_kp << pid.kp;
+				FontPrint(TNR45, 1139, 244, 300, 250, p2_kp.str(), D3DCOLOR_XRGB(139, 0, 0));
+				p2_ki << pid.ki;
+				FontPrint(TNR45, 1338, 244, 300, 250, p2_ki.str(), D3DCOLOR_XRGB(139, 0, 0));
+				p2_kd << pid.kp;
+				FontPrint(TNR45, 1538, 244, 300, 250, p2_kd.str(), D3DCOLOR_XRGB(139, 0, 0));
+				p2_lpf << lpf.a;
+				FontPrint(TNR45, 1139, 294, 300, 250, p2_lpf.str(), D3DCOLOR_XRGB(139, 0, 0));
+				p2_read << read_data;
+				FontPrint(TNR45, 1100, 344, 300, 250, p2_read.str(), D3DCOLOR_XRGB(139, 0, 0));
+				p2_out << output_data;
+				FontPrint(TNR45, 1100, 399, 300, 250, p2_out.str(), D3DCOLOR_XRGB(139, 0, 0));
+				p2_sf << scanner_frequency;
+				FontPrint(TNR45, 1100, 449, 300, 250, p2_sf.str(), D3DCOLOR_XRGB(139, 0, 0));
+				p2_of << output_frequency;
+				FontPrint(TNR45, 1100, 504, 300, 250, p2_of.str(), D3DCOLOR_XRGB(139, 0, 0));
+				break;
+			case 3:
+				p2_read << read_data;
+				FontPrint(TNR32, 1590, 150, 300, 250, p2_read.str(), D3DCOLOR_XRGB(0, 0, 0));
+				p3_target << target_data;
+				FontPrint(TNR32, 1590, 178, 300, 250, p3_target.str(), D3DCOLOR_XRGB(0, 68, 139));
+				p2_out << output_data;
+				FontPrint(TNR32, 1590, 208, 300, 250, p2_out.str(), D3DCOLOR_XRGB(139, 0, 0));
+				break;
+			}
+
 
 			//fps
 			std::ostringstream fps_out;
 			fps_out << "fps: " << fps;
-			FontPrint(font1, SCREENW - 150, 0, 300, 250, fps_out.str(), D3DCOLOR_XRGB(255, 255, 255));
+			FontPrint(TNR45, SCREENW - 150, 0, 300, 250, fps_out.str(), D3DCOLOR_XRGB(0, 0, 0));
 
-			//input data 
-			std::ostringstream inputdata;
-			inputdata << "input: " << input_data;
-			FontPrint(font1, 20, SCREENH / 2 + 250, 300, 250, inputdata.str(), D3DCOLOR_XRGB(255, 255, 255));
-
-			//draw bar
-			Bar.Sprite_Draw();
+			//mouse pos
+			std::ostringstream mouse_pos;
+			mouse_pos << "X：" << point.x << " Y:" << point.y;
+			FontPrint(TNR45, SCREENW - 300, 50, 300, 250, mouse_pos.str(), D3DCOLOR_XRGB(0, 0, 0));
 
 			//stop drawing
 			spriteobj->End();
 
-			//draw axis
-			DrawLine(50 + 17, Bar.original_y + 200 + 16, 50 + 17, Bar.original_y - 200 + 16, D3DCOLOR_XRGB(255, 255, 255));
-			DrawLine(400, 200, 400, 600, D3DCOLOR_XRGB(255, 255, 255));
-			DrawLine(400, 600, 900, 600, D3DCOLOR_XRGB(255, 255, 255));
-
-			for (int i = 0; i < 500; i++)
+			//draw wave
+			if (background == 3 && running)
 			{
-				DrawPoint(400 + i, 600 - input_wave[i], D3DCOLOR_XRGB(255, 0, 255));
-
-
-				DrawPoint(400 + i, 600 - output_wave[i], D3DCOLOR_XRGB(255, 255, 0));
+				if (output_data < 0)
+					output_data = 0;
+				else if (output_data > 4095)
+					output_data = 4095;
+				if (target_list.length() < timeaxis)
+				{
+					target_list.moveToStart();
+					read_list.moveToStart();
+					output_list.moveToStart();
+					for (int i = 0; i < target_list.length(); i++)
+					{
+						DrawPoint(origonx + i, origony - (lenth * target_list.getValue() / 4095), D3DCOLOR_XRGB(0, 0, 0));
+						//DrawPoint(origonx + i, 1 + origony - (lenth * target_list.getValue() / 4095), D3DCOLOR_XRGB(0, 0, 0));
+						target_list.next();
+						DrawPoint(origonx + i, origony - (lenth * read_list.getValue() / 4095), D3DCOLOR_XRGB(0, 0, 255));
+						//DrawPoint(origonx + i, 1 + origony - (lenth * read_list.getValue() / 4095), D3DCOLOR_XRGB(0, 0, 255));
+						read_list.next();
+						//DrawPoint(origonx + i, origony - (lenth * output_list.getValue() / 4095), D3DCOLOR_XRGB(255, 0, 0));
+						//DrawPoint(origonx + i, 1 + origony - (lenth * output_list.getValue() / 4095), D3DCOLOR_XRGB(255, 0, 0));
+						//output_list.next();
+					}
+				}
+				else
+				{
+					target_list.moveToEnd();
+					target_list.prev();
+					read_list.moveToEnd();
+					read_list.prev();
+					output_list.moveToEnd();
+					output_list.prev();
+					for (int i = timeaxis; i >0 ; i--)
+					{
+						DrawPoint(origonx + i, origony - (lenth * target_list.getValue() / 4095), D3DCOLOR_XRGB(0, 0, 0));
+						//DrawPoint(origonx + i, 1 + origony - (lenth * target_list.getValue() / 4095), D3DCOLOR_XRGB(0, 0, 0));
+						target_list.prev();
+						DrawPoint(origonx + i, origony - (lenth * read_list.getValue() / 4095), D3DCOLOR_XRGB(0, 0, 255));
+						//DrawPoint(origonx + i, 1 + origony - (lenth * read_list.getValue() / 4095), D3DCOLOR_XRGB(0, 0, 255));
+						read_list.prev();
+						//DrawPoint(origonx + i, origony - (lenth * output_list.getValue() / 4095), D3DCOLOR_XRGB(255, 0, 0));
+						//DrawPoint(origonx + i, 1 + origony - (lenth * output_list.getValue() / 4095), D3DCOLOR_XRGB(255, 0, 0));
+						//output_list.prev();
+					}
+				}
 			}
 
 			//stop rendering
@@ -212,7 +593,13 @@ void Game_End()
 	ZT7660_CloseDevice(m_cardNO);
 
 	//free memory and shut down
+
+	output_list.clear();
+	read_list.clear();
+	target_list.clear();
+
 	DirectSound_Shutdown();
 	DirectInput_Shutdown();
 	Direct3D_Shutdown();
+
 }

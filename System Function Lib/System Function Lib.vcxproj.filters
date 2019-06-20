@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Linked List">
+      <UniqueIdentifier>{52544ac0-fa9c-439b-bbf9-49f6a3301c2d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DirectSound.cpp">
@@ -46,6 +49,18 @@
     </ClInclude>
     <ClInclude Include="original_PID.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AbstractList.h">
+      <Filter>Linked List</Filter>
+    </ClInclude>
+    <ClInclude Include="arrayList.h">
+      <Filter>Linked List</Filter>
+    </ClInclude>
+    <ClInclude Include="Constants.h">
+      <Filter>Linked List</Filter>
+    </ClInclude>
+    <ClInclude Include="LList.h">
+      <Filter>Linked List</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

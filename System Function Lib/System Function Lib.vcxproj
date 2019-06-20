@@ -166,6 +166,9 @@
     <None Include="USB7660.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="background1.png" />
+    <Image Include="background2.png" />
+    <Image Include="background3.png" />
     <Image Include="blue_boxTick.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

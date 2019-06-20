@@ -54,6 +54,27 @@ bool Game_Init(HWND window)
 		return false;
 	}
 
+	//initialize Background1
+	if (!Background1.Load_texture("background1.png"))
+	{
+		MessageBox(window, "Error loading background1.png", APPTITLE.c_str(), 0);
+		return false;
+	}
+
+	//initialize Background2
+	if (!Background2.Load_texture("background2.png"))
+	{
+		MessageBox(window, "Error loading background2.png", APPTITLE.c_str(), 0);
+		return false;
+	}
+
+	//initialize Background3
+	if (!Background3.Load_texture("background3.png"))
+	{
+		MessageBox(window, "Error loading background3.png", APPTITLE.c_str(), 0);
+		return false;
+	}
+
 	font1 = MakeFont("Times New Roman", 45);
 
 	return true;
@@ -79,25 +100,6 @@ void Game_Run(HWND window)
 		fps_c = 0;
 	}
 
-	//scaner
-	if (timeGetTime() > scantimer + 10)
-	{
-		scantimer = timeGetTime();
-
-		//read data
-		read_data = ZT7660_AIonce(m_cardNO, m_chMode, 21, m_AIrange, m_AIAmp, 0, 0, 0, 0, 0, 0);
-		
-		//controls
-		output_data = pid.PID_control(input_data, read_data);
-		ZT7660_AOonce(1, 1, 0, output_data);
-
-		input_wave[scaner] = (int)(400 * input_data / 4095.0);
-		output_wave[scaner] = (int)(400 * read_data / 4095.0);
-		scaner++;
-		if (scaner == 499)
-			scaner = 0;
-	}
-
 	//bar movement
 	if (Bar.Mouse_over() && Mouse_Button(0))
 	{
@@ -108,8 +110,38 @@ void Game_Run(HWND window)
 		if (Bar.coord_y <= Bar.original_y - 200)
 			Bar.coord_y = Bar.original_y - 200;
 	}
-	input_data = 4095.0 * (Bar.original_y + 200 - Bar.coord_y) / 400;
+	//input_data = (int)(4095.0 * (Bar.original_y + 200 - Bar.coord_y) / 400);
 
+	//output cycle
+	if (timeGetTime() > outputtimer + 5)
+	{
+		//controls
+		
+		output_data = (int)pid.PID_control(input_data, read_data);
+		//output_data = (int)step_pid.PID_control(input_data, read_data);
+		ZT7660_AOonce(1, 1, 0, output_data);
+	}
+
+	//scaner
+	if (timeGetTime() > scantimer + scanertime)
+	{
+		scantimer = timeGetTime();
+
+		//read data
+		read_data = ZT7660_AIonce(m_cardNO, m_chMode, 21, m_AIrange, m_AIAmp, 0, 0, 0, 0, 0, 0);
+		read_data = lpf.lpf(read_data);
+
+		//sine wave
+		sincounter++;
+		input_data = (int)(sin(sincounter * M_PI / 250) * 1000 + 2047);
+		
+		//wave
+		input_wave[scaner] = (int)(400 * input_data / 4095.0);
+		output_wave[scaner] = (int)(400 * read_data / 4095.0);
+		scaner++;
+		if (scaner == 499)
+			scaner = 0;
+	}
 
 
 	if (timeGetTime() > screentimer + 14)		//slow rendering to approximately 60 fps
@@ -123,20 +155,12 @@ void Game_Run(HWND window)
 			//start drawing
 			spriteobj->Begin(D3DXSPRITE_ALPHABLEND);
 			//*** insert sprite code here ***
+			//draw background
+			//Background1.Sprite_Draw();
+			//Background2.Sprite_Draw();
+			//Background3.Sprite_Draw();
 
-
-			//draw axis
-			DrawLine(50 + 17, Bar.original_y + 200 + 16, 50 + 17, Bar.original_y - 200 + 16, D3DCOLOR_XRGB(255, 255, 255));
-			DrawLine(400, 200, 400, 600, D3DCOLOR_XRGB(255, 255, 255));
-			DrawLine(400, 600, 900, 600, D3DCOLOR_XRGB(255, 255, 255));
-
-			for (int i = 0; i < 500; i++)
-			{
-				DrawPoint(400 + i, 600 - input_wave[i], D3DCOLOR_XRGB(255, 0, 255));
-
-
-				DrawPoint(400 + i, 600 - output_wave[i], D3DCOLOR_XRGB(255, 255, 0));
-			}
+			
 
 			//input value
 			std::ostringstream text_1;
@@ -158,6 +182,20 @@ void Game_Run(HWND window)
 
 			//stop drawing
 			spriteobj->End();
+
+			//draw axis
+			DrawLine(50 + 17, Bar.original_y + 200 + 16, 50 + 17, Bar.original_y - 200 + 16, D3DCOLOR_XRGB(255, 255, 255));
+			DrawLine(400, 200, 400, 600, D3DCOLOR_XRGB(255, 255, 255));
+			DrawLine(400, 600, 900, 600, D3DCOLOR_XRGB(255, 255, 255));
+
+			for (int i = 0; i < 500; i++)
+			{
+				DrawPoint(400 + i, 600 - input_wave[i], D3DCOLOR_XRGB(255, 0, 255));
+
+
+				DrawPoint(400 + i, 600 - output_wave[i], D3DCOLOR_XRGB(255, 255, 0));
+			}
+
 			//stop rendering
 			d3ddev->EndScene();
 			d3ddev->Present(NULL, NULL, NULL, NULL);

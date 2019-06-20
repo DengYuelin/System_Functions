@@ -62,5 +62,14 @@
     <Image Include="blue_boxTick.png">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="background1.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="background2.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="background3.png">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>

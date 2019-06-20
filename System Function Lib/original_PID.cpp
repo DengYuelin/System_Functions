@@ -5,14 +5,11 @@ PID::PID(const float k_p, const float k_i, const float k_d)
 	this->kp = k_p;
 	this->ki = k_i;
 	this->kd = k_d;
-	this->q0 = this->kp + this->ki + this->kd;
-	this->q1 = -this->kp - 2 * this->kd;
-	this->q2 = this->kd;
-	this->error_last = 0;
+	this->error_1 = 0;
+	this->error_2 = 0;
 	this->error = 0;
-	this->B_last = 0;
-	this->B = 0;
 	this->u = 0;
+	this->u_1 = 0;
 }
 
 PID::~PID()
@@ -21,13 +18,56 @@ PID::~PID()
 
 float PID::PID_control(const float reference, const float sensor)
 {
-	this->error = reference - sensor;
-	this->u = this->q0*this->error + this->B_last;
-	this->B = this->u + this->q1*this->error + this->q2*this->error_last;
+	error = reference - sensor;
+	if ((error > 0 && u < 0) || (error < 0 && u> 0))
+		u = u_1 + kp * (error - error_1) + ki * error + kd * (error - 2 * error_1 + error_2);
+	else
+		u = u_1 + kp * (error - error_1) + kd * (error - 2 * error_1 + error_2);
 
-	//update the B and error
-	this->error_last = this->error;
-	this->B_last = this->B;
+	
+	//update
+	error_2 = error_1;
+	error_1 = error;
+	u_1 = u;
 
-	return this->u;
+
+	//dead zone
+	if (error <= 0.01 && error >= -0.01)
+		return 1800;
+	else
+	{
+		if (this->u < 0)
+		{
+			return 1550 + this->u;
+		}
+		else if (this->u > 0)
+		{
+			return 2460 + this->u;
+		}
+	}
+	
+}
+
+LPF::LPF(const float a)
+{
+	this->a = a;
+	this->y = 0;
+	this->y1 = 0;
+	this->timer = 0;
+}
+
+LPF::~LPF()
+{
+}
+
+unsigned int LPF::lpf(const unsigned int x)
+{
+	if (this->timer == 0)
+	{
+		this->y1 = x;
+		this->timer++;
+	}
+	this->y = (unsigned int)(a * y1 + (1 - a)*x);
+	this->y1 = this->y;
+	return y;
 }

@@ -52,11 +52,15 @@ unsigned long m_ADoverTime;
 unsigned long read_data;
 
 //input data
-double input_data = 0;
+int input_data = 0;
 
 //output data
-PID pid(1.0,0.01,1.0);
+PID pid(5, 2, 10);//250ms
+PID step_pid(2, 1, 1);//1.5 0.1 1
+LPF lpf(0.9);
 int output_data = 0;
+DWORD outputtimer = timeGetTime();
+
 
 //fps display
 DWORD fpstimer = timeGetTime();
@@ -68,10 +72,14 @@ unsigned int scaner = 0;
 DWORD scantimer = timeGetTime();
 int input_wave[500] = { 0 };
 int output_wave[500] = { 0 };
+double sincounter = 0.0;
+int scanertime = 4;
 
 //Font
 LPD3DXFONT font1;
 
 //sprites
 BASIC_SPRITE Bar(true, false, 1, 50, SCREENH / 2, 50, SCREENH / 2, 0, 1, 36, 36, 1, 0, 0, 0, 0, 0, 1, D3DCOLOR_ARGB(255, 255, 255, 255), NULL, 0);//slide bar
-
+BASIC_SPRITE Background1(true, false, 1, 0, 0, 0, 0, 0, 1, 2048, 1536, 0.5, 0, 0, 0, 0, 0, 1);
+BASIC_SPRITE Background2(false, false, 1, 0, 0, 0, 0, 0, 1, 2048, 1536, 0.5, 0, 0, 0, 0, 0, 1);
+BASIC_SPRITE Background3(false, false, 1, 0, 0, 0, 0, 0, 1, 2048, 1536, 0.5, 0, 0, 0, 0, 0, 1);

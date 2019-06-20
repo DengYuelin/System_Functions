@@ -8,16 +8,28 @@ public:
 	//function
 	float PID_control(const float reference, const float sensor);
 	//data
-	float q0;
-	float q1;
-	float q2;
-	float B_last;
-	float B;
-	float error_last;
+	float error_1;
 	float error;
+	float error_2;
 	float u;
+	float u_1;
 	float kp;
 	float ki;
 	float kd;
+};
+
+
+class LPF
+{
+public:
+	LPF(const float a);
+	~LPF();
+	//function
+	unsigned int lpf(const unsigned int x);
+	//data
+	float a;
+	unsigned int y;
+	unsigned int y1;
+	int timer;
 };
 

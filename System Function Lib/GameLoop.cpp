@@ -11,6 +11,12 @@ const string APPTITLE = "DirectX Project <Rename Me>";
 const int SCREENW = 1920;
 const int SCREENH = 1080;
 const bool FULLSCREEN = true;
+double sine_steady_state_error;
+double last_reference;
+double now_reference;
+double amplitude;
+double maximum = 0;
+double overshoot;
 
 DWORD screentimer = timeGetTime();
 
@@ -145,7 +151,7 @@ void Game_Run(HWND window)
 	//clear screen
 	d3ddev->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 100), 1.0f, 0);
 	//get cusor point
-	GetCursorPos(&point);
+	//GetCursorPos(&point);
 
 
 	//*** insert game code here ***
@@ -179,12 +185,12 @@ void Game_Run(HWND window)
 			}
 			else if (target_mode == 2)
 			{
-				target_data = (int)((700 - Bar.coord_y) * 4096 / lenth);
+				target_data = (int)((780 - Bar.coord_y) * 4096 / lenth);
 				output_data = pid.PID_control(target_data, read_data);
 			}
 			else if (target_mode == 3)
 			{
-				output_data = (int)((700 - Bar.coord_y) * 4096 / lenth);
+				output_data = (int)((780 - Bar.coord_y) * 4096 / lenth);
 			}
 
 
@@ -192,6 +198,15 @@ void Game_Run(HWND window)
 			output_list.append(output_data);
 			read_list.append(read_data);
 			target_list.append(target_data);
+			double instant_error = target_data - read_data;
+			sine_steady_state_error = abs(instant_error)*275.0/4095.0;
+			if (sine_steady_state_error < 10 && caltr)
+			{
+				Tr = timeGetTime() - tr;
+				caltr = false;
+			}
+
+
 		}
 		else
 			output_data = 1800;
@@ -278,9 +293,9 @@ void Game_Run(HWND window)
 			Start_Button.frame = 0;
 			Stop_Button.frame = 0;
 			target_mode = 1;
-			sin_frequency = 0.22;
+			sin_frequency = 0.25;
 			sincounter = 0;
-			pid.reset(5.3,2,10);
+			pid.reset(5,2,10);
 			running = false;
 		}
 		else if (Sin2_Button.Mouse_over() && Left_Click_Once())
@@ -297,7 +312,7 @@ void Game_Run(HWND window)
 			target_mode = 1;
 			sin_frequency = 0.21;
 			sincounter = 0;
-			pid.reset(5.3,2,10);
+			pid.reset(5,2,10);
 			running = false;
 		}
 		else if (Sin3_Button.Mouse_over() && Left_Click_Once())
@@ -314,7 +329,7 @@ void Game_Run(HWND window)
 			target_mode = 1;
 			sin_frequency = 0.20;
 			sincounter = 0;
-			pid.reset(5.3,2,10);
+			pid.reset(5,2,10);
 			running = false;
 		}
 		else if (Sin4_Button.Mouse_over() && Left_Click_Once())
@@ -331,7 +346,7 @@ void Game_Run(HWND window)
 			target_mode = 1;
 			sin_frequency = 0.15;
 			sincounter = 0;
-			pid.reset(5.1,2,9);
+			pid.reset(5,2,9);
 			running = false;
 		}
 		else if (Sin5_Button.Mouse_over() && Left_Click_Once())
@@ -363,7 +378,7 @@ void Game_Run(HWND window)
 			Start_Button.frame = 0;
 			Stop_Button.frame = 0;
 			target_mode = 2;
-			pid.reset(1.5,1,1);
+			pid.reset(0.7,5,1.5);
 			running = false;
 		}
 		else if (Valve_Button.Mouse_over() && Left_Click_Once())
@@ -404,26 +419,26 @@ void Game_Run(HWND window)
 		}
 		if (target_mode == 1)
 		{
-			Bar.coord_y = 700 - (read_data * lenth / 4096);
+			Bar.coord_y = 780 - (read_data * lenth / 4096);
 		}
 		else
 		{
-			if (Mouse_Button(0) && point.x <= 1815 && point.x >= 1790 && running)
+			GetCursorPos(&point);
+			if (Mouse_Button(0) && point.x <= 1800 && point.x >= 1720 && running)
 			{
+				overshoot = 0.1 + 0.1 * (Bar.coord_y - point.y) / 1080.0;
+				tr = timeGetTime();
+				caltr = true;
 				Bar.coord_y = point.y - 32;
-				if (Bar.coord_y <= 160)
-					Bar.coord_y = 160;
-				if (Bar.coord_y >= 700)
-					Bar.coord_y = 700;
+				if (Bar.coord_y <= 180)
+					Bar.coord_y = 180;
+				if (Bar.coord_y >= 780)
+					Bar.coord_y = 780;
+
 			}
 		}
 		break;
 	}
-
-
-
-
-
 
 	//output cycle
 	if (timeGetTime() > outputtimer + output_cycle)
@@ -481,10 +496,12 @@ void Game_Run(HWND window)
 			std::ostringstream p2_sf;
 			std::ostringstream p2_of;
 			std::ostringstream p3_target;
+			std::ostringstream p3_time;
+			std::ostringstream p4_time;
 			switch (background)
 			{
 			case 1:
-				p1_sin << "0.22   0.21   0.20   0.15   0.10";
+				p1_sin << "0.25   0.21   0.20   0.15   0.10";
 				FontPrint(TNR45, 560, 331, 590, 250, p1_sin.str(), D3DCOLOR_XRGB(255, 255, 255));
 				break;
 			case 2:
@@ -506,12 +523,17 @@ void Game_Run(HWND window)
 				FontPrint(TNR45, 1100, 504, 300, 250, p2_of.str(), D3DCOLOR_XRGB(139, 0, 0));
 				break;
 			case 3:
-				p2_read << read_data;
-				FontPrint(TNR32, 1590, 150, 300, 250, p2_read.str(), D3DCOLOR_XRGB(0, 0, 0));
-				p3_target << target_data;
-				FontPrint(TNR32, 1590, 178, 300, 250, p3_target.str(), D3DCOLOR_XRGB(0, 68, 139));
+				p2_read << ( 275 * read_data / 4095.0);
+				FontPrint(TNR32, 1530, 150, 300, 250, p2_read.str(), D3DCOLOR_XRGB(0, 0, 0));
+				p3_target << (275 * target_data / 4095.0);
+				FontPrint(TNR32, 1530, 178, 300, 250, p3_target.str(), D3DCOLOR_XRGB(0, 68, 139));
 				p2_out << output_data;
-				FontPrint(TNR32, 1590, 208, 300, 250, p2_out.str(), D3DCOLOR_XRGB(139, 0, 0));
+				FontPrint(TNR32, 1530, 208, 300, 250, p2_out.str(), D3DCOLOR_XRGB(139, 0, 0));
+				p3_time << "Step responce specifications: overshoot-"<< "NA" << "\n"<<"Tr = " << "NA" << "ms" << " Ts = " << "NA"  << "ms" ;
+
+				FontPrint(TNR32, 590, 908, 600, 500, p3_time.str(), D3DCOLOR_XRGB(0, 0, 0));
+				p4_time << "Sine responce specifications: steady_state_error = "<<sine_steady_state_error<<"mm";
+				FontPrint(TNR32, 590, 998, 600, 500, p4_time.str(), D3DCOLOR_XRGB(0, 0, 0));
 				break;
 			}
 
@@ -522,9 +544,9 @@ void Game_Run(HWND window)
 			FontPrint(TNR45, SCREENW - 150, 0, 300, 250, fps_out.str(), D3DCOLOR_XRGB(0, 0, 0));
 
 			//mouse pos
-			std::ostringstream mouse_pos;
+			/*std::ostringstream mouse_pos;
 			mouse_pos << "X：" << point.x << " Y:" << point.y;
-			FontPrint(TNR45, SCREENW - 300, 50, 300, 250, mouse_pos.str(), D3DCOLOR_XRGB(0, 0, 0));
+			FontPrint(TNR45, SCREENW - 300, 50, 300, 250, mouse_pos.str(), D3DCOLOR_XRGB(0, 0, 0));*/
 
 			//stop drawing
 			spriteobj->End();

@@ -173,7 +173,13 @@
     <Image Include="background1.png" />
     <Image Include="background2.png" />
     <Image Include="background3.png" />
+    <Image Include="bar.png" />
     <Image Include="blue_boxTick.png" />
+    <Image Include="frebutton.png" />
+    <Image Include="posbutton.png" />
+    <Image Include="start.png" />
+    <Image Include="stop.png" />
+    <Image Include="valvebutton.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -21,6 +21,7 @@ unsigned long m_ch1Flag;
 unsigned long m_ADctrlWord;
 unsigned long m_ADoverTime;
 
+
 //scanner
 //read the data from the device ; generate sin wave
 DWORD scantimer = timeGetTime();
@@ -30,7 +31,7 @@ int scanner_cycle = 4;
 double scanner_frequency = (1000.0 / (scanner_cycle + 1));//Hz
 int sincounter = 0;
 double sin_frequency = 0.25; // Hz
-int sin_amplitude = 1000;
+int sin_amplitude= 1000;
 bool running = false;
 
 //target data
@@ -55,6 +56,10 @@ int origonx = 522;
 int origony = 786;
 int timeaxis = 1000;
 
+//calculations
+int Tr;
+DWORD tr;
+int caltr = false;
 
 //fps display
 DWORD fpstimer = timeGetTime();
@@ -88,4 +93,4 @@ BASIC_SPRITE Valve_Button(true, false, 1, 1432, 300, 1432, 300, 0, 2, 270, 100, 
 //Background 3
 BASIC_SPRITE Start_Button(false, false, 1, 1616, 900, 1616, 900, 0, 2, 100, 100, 1, 0, 0, 0, 0, 0, 1);
 BASIC_SPRITE Stop_Button(false, false, 1, 1216, 900, 1716, 900, 0, 2, 100, 100, 1, 0, 0, 0, 0, 0, 1);
-BASIC_SPRITE Bar(false, false, 1, 1780, 460, 1780, 460, 0, 1, 124, 124, 0.5, 0, 0, 0, 0, 1);
+BASIC_SPRITE Bar(false, false, 1, 1780, 460, 1750, 460, 0, 1, 124, 124, 0.5, 0, 0, 0, 0, 1);

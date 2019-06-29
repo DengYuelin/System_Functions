@@ -86,5 +86,23 @@
     <Image Include="background3.png">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="bar.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="frebutton.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="posbutton.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="start.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="stop.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="valvebutton.png">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>
